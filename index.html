@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokéclic</title>
+<style>
+/* ===== GLOBAL ===== */
+body{margin:0;font-family:sans-serif;background:#0f1115;color:#e4e6eb;display:flex;flex-direction:column;min-height:100vh;text-align:center;}
+header{display:flex;justify-content:space-between;align-items:center;background:#16181d;padding:10px 20px;height:95px;box-shadow:0 0 15px rgba(0,0,0,0.6);}
+.logo-container{display:flex;align-items:center;}
+.logo{width:90px;height:90px;object-fit:contain;}
+header h1{margin-left:10px;font-size:1.5em;color:#fff;}
+nav a{margin:0 10px;text-decoration:none;color:#c9d1d9;font-weight:bold;font-size:1.2em;transition:0.2s;cursor:pointer;}
+nav a:hover{color:#b74747;}
+main{flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+button{border:none;border-radius:10px;padding:10px 18px;cursor:pointer;transition:0.15s;}
+#click-button{width:220px;height:90px;font-size:1.5em;background:#1e2128;color:#fff;border-radius:18px;margin:30px auto;display:block;position:relative;overflow:visible;box-shadow:0 0 25px rgba(0,0,0,0.8);}
+#click-button{
+  width:auto;
+  height:auto;
+  background:none;
+  box-shadow:none;
+}
+#pokeball{
+  animation: floatBall 2s ease-in-out infinite;
+}
+
+#pokeball.shake{
+  animation: shakeBall 0.3s;
+}
+#click-button{
+  background:none;
+  border:none;
+  box-shadow:none;
+  padding:0;
+  outline:none;
+  cursor:pointer;
+}
+
+#click-button:hover{
+  background:none;
+  box-shadow:none;
+}
+
+#click-button:active{
+  background:none;
+  box-shadow:none;
+  transform:scale(0.95); /* effet clic propre */
+}
+
+button:focus{
+  outline:none;
+}
+/* ===== XP BAR & LEVEL ===== */
+#level-container{margin:20px auto;max-width:500px;width:90%;}
+#level-text{color:#FFD700;font-weight:bold;margin-bottom:5px;}
+#xp-bar{width:100%;background:#2c2f36;border-radius:12px;height:20px;overflow:hidden;position:relative;}
+#xp-fill{height:100%;width:0%;background:#00ff00;transition:width 0.3s;}
+#xp-text{position:absolute;width:100%;text-align:center;color:#000;font-weight:bold;font-size:0.85em;top:0;line-height:20px;}
+/* ===== FOOTER ===== */
+footer{background:#16181d;padding:40px 20px 20px;position:relative;margin-top:auto;}
+.footer-bottom{max-width: 1200px;margin: auto;padding-top: 25px;border-top: 1px solid transparent;background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent) top/100% 1px no-repeat;display: flex;justify-content: space-between;font-size: 13px;color: rgba(255,255,255,0.5);}
+.footer-bottom-right{display: flex;gap: 5px;}
+.heart{color: #ff3b3b;animation: pulse 1.5s infinite;}
+/* ===== RESET ===== */
+#reset{background:#8b0000;color:white;margin-left:auto;margin-right:auto;margin-top:10px;padding:8px 20px;font-size:1em;border-radius:8px;}
+#reset:hover{background:#b30000;}
+/* ===== ANIMATION ===== */
+@keyframes pulse{0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); }}
+/* ===== EFFET CLIC ===== */
+.click-effect{position:absolute;font-weight:bold;pointer-events:none;animation:float 1.2s forwards;user-select:none;}
+@keyframes float{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0; scale(1.6);}}
+/* ===== NOTIFICATIONS ===== */
+#notif-container{
+  position:fixed;
+  bottom:160px;   /* part du bas */
+  left:20px;     /* à gauche */
+  display:flex;
+  flex-direction:column-reverse; /* 🔥 empile vers le haut */
+  gap:10px;
+  z-index:9999;
+}
+.notif{background:#2ecc71;color:#0f1115;padding:12px 18px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,0.5);font-weight:bold;animation:slideIn 0.4s ease, fadeOut 0.4s ease 2.6s forwards;}
+@keyframes slideIn{from{opacity:0;transform:translateX(100%);}to{opacity:1;transform:translateX(0);}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(100%);}}
+/* ===== STATS ===== */
+.stats{margin:5px;font-size:1.2em;color:#b0b6be;}
+
+/* ===== SUCCÎ±ÃªS ===== */
+.success-container{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:20px;
+}
+.success-item{
+  padding:15px;
+  width:80%;
+  margin:0 auto;
+  border-radius:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:1.4em;
+}
+.success-item.locked{
+  background:#2c2f36;
+  color:#888;
+}
+.success-item.unlocked{
+  background:#2ecc71;
+  color:#0f1115;
+  font-weight:bold;
+}
+
+/* ===== POKÎ±Ã«DEX ===== */
+.pokedex-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6 colonnes */
+  gap:5px;
+  justify-items: center;
+  margin-top: 20px;
+}
+.pokemon {
+  width:118px;
+  height:130px;
+  background:#1e2128;
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  padding:5px;
+  box-shadow:0 0 5px rgba(0,0,0,0.5);
+  transition:0.2s;
+}
+.pokemon:hover {
+  transform: scale(1.05);
+}
+.pokemon-number {
+  background:#b74747;
+  color:white;
+  padding:2px 6px;
+  border-radius:6px;
+  font-size:0.85em;
+  font-weight:bold;
+}
+.pokemon img {
+  width:100px;
+  height:100px;
+  object-fit:contain;
+}
+.pokemon-name {
+  font-size:0.9em;
+  color:#e4e6eb;
+  text-align:center;
+}
+.pokemon.locked img {
+  opacity:0.3;
+}
+.pokemon.locked .pokemon-name {
+  color:#666;
+}
+.pokemon.unlocked {
+  border:2px solid #b74747;
+  box-shadow:0 0 5px #b74747;
+}
+
+/* ===== BOUTIQUE ===== */
+/* ===== BOUTIQUE MODERNE ===== */
+
+.shop-row{
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-top:30px;
+  flex-wrap:wrap;
+}
+
+.shop-container{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  width:420px;
+}
+
+/* carte */
+.shop-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background: linear-gradient(145deg, #1a1d24, #111318);
+  border-radius:14px;
+  padding:15px 18px;
+  box-shadow:
+    0 4px 15px rgba(0,0,0,0.6),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
+  transition:0.2s;
+}
+
+/* hover */
+.shop-item:hover{
+  transform: translateY(-3px);
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.8),
+    0 0 10px rgba(255, 59, 59, 0.4);
+}
+
+/* gauche (texte) */
+.shop-info{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+
+/* titre */
+.shop-info h4{
+  margin:0;
+  font-size:1.2em;
+  color:#ffffff;
+}
+
+/* description */
+.shop-info p{
+  margin:3px 0;
+  font-size:0.85em;
+  color:#8b949e;
+}
+
+/* prix */
+.price{
+  margin-top:4px;
+  font-weight:bold;
+  font-size:1em;
+  color:#ff4d4d;
+}
+
+/* bouton */
+.buy-btn{
+  background: linear-gradient(145deg, #ff4d4d, #7a0000);
+  border:none;
+  padding:8px 14px;
+  border-radius:10px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow: 0 3px 10px rgba(255,59,59,0.4);
+  transition:0.15s;
+}
+
+.buy-btn:hover{
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(255,59,59,0.7);
+}
+
+/* disabled */
+.buy-btn:disabled{
+  background:#2c2f36;
+  color:#777;
+  box-shadow:none;
+  cursor:not-allowed;
+}
+.egg {
+  width:140px;
+  height:140px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.egg img {
+  width:120px;
+  height:120px;
+  object-fit:contain;
+  transition:0.2s;
+}
+
+.egg:hover {
+  transform:scale(1.1);
+}
+
+/* Animation secousse */
+@keyframes wiggle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(8deg); }
+  50% { transform: rotate(-8deg); }
+  75% { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
+}
+#click-button{
+  background:none;
+  box-shadow:none;
+}
+
+#pokeball{
+  width:200px;
+  height:200px;
+  animation: floatBall 2s ease-in-out infinite;
+  transition: transform 0.2s;
+}
+
+/* va-et-vient */
+@keyframes floatBall{
+  0% { transform: translateX(0px) rotate(0deg); }
+  50% { transform: translateX(15px) rotate(5deg); }
+  100% { transform: translateX(0px) rotate(0deg); }
+}
+
+/* secousse */
+@keyframes shakeBall{
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(10deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.shake{
+  animation: shakeBall 0.3s;
+}
+
+@keyframes fall{
+  0%{
+    transform: translateY(0px) rotate(0deg);
+    opacity:1;
+  }
+  100%{
+    transform: translateY(100vh) rotate(360deg);
+    opacity:0;
+  }
+}
+#click-button{
+  background:none;
+  border:none;
+  box-shadow:none;
+  padding:0;
+}
+
+
+@keyframes floatBall{
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+#pokeball{
+  width:240px;
+  height:240px;
+  animation: floatBall 3s ease-in-out infinite;
+}
+@keyframes shakeBall{
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(6deg); }
+  50% { transform: rotate(-6deg); }
+  75% { transform: rotate(4deg); }
+  100% { transform: rotate(0deg); }
+}
+#pokeball{
+  background: transparent;
+}
+.falling-ball{
+  position:fixed;
+  top:-50px; /* démarre au-dessus de l'écran */
+  width:40px;
+  height:40px;
+  pointer-events:none;
+  z-index:0; /* derrière tout */
+
+  animation: fall linear forwards;
+}
+
+/* animation chute */
+@keyframes fall{
+  0%{
+    transform: translateY(0) rotate(0deg);
+    opacity:1;
+  }
+  100%{
+    transform: translateY(110vh) rotate(360deg);
+    opacity:0;
+  }
+}
+.heart{
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.heart:hover{
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 8px red);
+}
+.egg:hover img{
+  animation: wiggle 0.3s ease;
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+}
+.buy-btn:focus,
+.buy-btn:focus-visible,
+.buy-btn:active{
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* supprime aussi le highlight mobile */
+.buy-btn{
+  -webkit-tap-highlight-color: transparent;
+}
+@keyframes spinBall{
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin{
+  animation: spinBall 2s linear infinite;
+}
+.icon.green{
+  filter: hue-rotate(90deg) saturate(3);
+  width:20px;
+  height:20px;
+  vertical-align:middle;
+  margin-right:6px;
+}
+.green-icon{
+  fill: #00ff66;
+}
+.icon1{
+  width:40px;
+  height:40px;
+  vertical-align:middle;
+  margin-right:6px;
+}
+.icon2{
+  width:20px;
+  height:30px;
+  vertical-align:middle;
+  margin-right:6px;
+}
+.icon3{
+  width:40px;
+  height:40px;
+  vertical-align:middle;
+  margin-right:6px;
+}
+
+
+/* ===== CONTAINER ===== */
+.success-container{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:20px;
+  width:600px;
+  max-height:500px;
+  overflow-y:auto;
+  overflow-x:visible;
+  padding:10px;
+}
+
+/* ===== SCROLL PROPRE ===== */
+.success-container::-webkit-scrollbar{
+  width:8px;
+}
+
+.success-container::-webkit-scrollbar-track{
+  background:#0f1115;
+  border-radius:10px;
+}
+
+.success-container::-webkit-scrollbar-thumb{
+  background:linear-gradient(#b30000,#ff3b3b);
+  border-radius:10px;
+}
+
+/* ===== CARTE ===== */
+.success-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  border-radius:12px;
+  background:#1a1d24;
+  border:2px solid #2c2f36;
+  transition:0.2s;
+  position:relative;
+}
+.success-container::before{
+  content:"";
+  display:block;
+  height:5px;
+}
+/* ===== UNLOCKED (ROUGE) ===== */
+.success-card.unlocked{
+  background:linear-gradient(145deg,#2b0000,#7a0000);
+  border:2px solid #ff3b3b;
+  box-shadow:0 0 15px rgba(255,0,0,0.5);
+  color:white;
+}
+
+/* ===== LOCKED (GRIS PROPRE) ===== */
+.success-card.locked{
+  opacity:0.5;
+  filter:grayscale(0.8);
+}
+
+/* ===== HOVER ===== */
+.success-card:hover{
+  transform: translateY(-4px); /* ❌ PAS de scale */
+  border-color:#ff3b3b;
+  box-shadow:
+    0 8px 25px rgba(0,0,0,0.8),
+    0 0 12px rgba(255,0,0,0.5);
+}
+.success-card{
+  position:relative;
+  z-index:1;
+  box-sizing:border-box;
+}
+/* ===== ICON ===== */
+.success-icon{
+  width:50px;
+  height:50px;
+  background:#111;
+  border-radius:10px;
+  padding:5px;
+  border:2px solid #2c2f36;
+}
+
+/* ===== TEXTE ===== */
+.success-title{
+  font-size:1.1em;
+  font-weight:bold;
+  color:#ffffff;
+}
+
+.success-desc{
+  font-size:0.8em;
+  color:#aaaaaa;
+}
+
+/* ===== OBJECTIF ===== */
+.success-goal{
+  font-weight:bold;
+  font-size:1em;
+  color:#ff3b3b;
+}
+
+/* ===== CENTRE TEXTE ===== */
+.success-text{
+  flex:1;
+  text-align:left;
+}
+
+/* ===== EFFET GLOW POKÉBALL ===== */
+.success-card.unlocked::after{
+  content:"";
+  position:absolute;
+  width:12px;
+  height:12px;
+  background:white;
+  border-radius:50%;
+  right:10px;
+  top:10px;
+  box-shadow:0 0 10px white;
+}
+.success-text{flex:1;text-align:left;}
+.success-title{font-weight:bold;}
+.success-desc{font-size:0.8em;color:#aaa;}
+.success-goal{color:#ff3b3b;font-weight:bold;}
+
+/* ===== SHOP GLOBAL ===== */
+.shop-layout{
+  max-width:800px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+/* ===== TOP ===== */
+.shop-top{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:15px;
+}
+
+/* ===== BAS ===== */
+.shop-bottom{
+  margin-top:10px;
+}
+
+/* ===== GRID POKEMON ===== */
+.shop-right{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:15px;
+}
+
+/* ===== CARD ===== */
+.shop-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px;
+  border-radius:12px;
+  background:#1a1d24;
+  border:1px solid #2c2f36;
+  box-sizing:border-box;
+}
+
+/* empêche tout débordement */
+.shop-item *{
+  max-width:100%;
+}
+
+/* ===== TEXT ===== */
+.shop-info{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+
+.shop-info h4{
+  margin:0;
+  font-size:1em;
+}
+
+.price{
+  font-size:0.85em;
+  color:#ff4d4d;
+}
+
+/* ===== BUTTON ===== */
+.buy-btn{
+  padding:6px 10px;
+  border-radius:8px;
+  background:#ff3b3b;
+  color:white;
+  border:none;
+  cursor:pointer;
+  white-space:nowrap; /* évite cassure */
+}
+
+.buy-btn:disabled{
+  background:#333;
+  color:#777;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo-container">
+<img src="images/logo.png" class="logo" alt="Logo Pokéclic">
+<h1>Pokéclic</h1>
+</div>
+<nav>
+<a data-page="accueil">Accueil</a>
+<a data-page="boutique">Boutique</a>
+<a data-page="Succès">Succès</a>
+<a data-page="pokedex">Pokédex</a>
+<a data-page="oeufs">Oeufs</a>
+</nav>
+</header>
+
+<main id="content"></main>
+
+<div id="level-container">
+<div id="level-text">Niveau : 1</div>
+<div id="xp-bar"><div id="xp-fill"></div><div id="xp-text">0 / 100 XP</div></div>
+</div>
+
+<footer>
+    <div class="footer-bottom">
+        <div>© 2026 Pokéclic</div>
+        <div class="footer-bottom-right">
+            Fait avec <span class="heart" id="secret-heart">❤️</span> par Kochemar
+        </div>
+    </div>
+    <button id="reset">Réinitialiser la partie</button>
+</footer>
+
+<script>
+const POKEMON_NAMES = [
+"Bulbizarre","Herbizarre","Florizarre","Salamèche","Reptincel","Dracaufeu",
+"Carapuce","Carabaffe","Tortank","Chenipan","Chrysacier","Papilusion",
+"Aspicot","Coconfort","Dardargnan","Roucool","Roucoups","Roucarnage",
+"Rattata","Rattatac","Piafabec","Rapasdepic","Abo","Arbok","Pikachu","Raichu",
+"Sabelette","Sablaireau","Nidoran♀","Nidorina","Nidoqueen","Nidoran♂",
+"Nidorino","Nidoking","Mélofée","Mélodelfe","Goupix","Feunard",
+"Rondoudou","Grodoudou","Nosferapti","Nosferalto","Mystherbe","Ortide",
+"Rafflesia","Paras","Parasect","Mimitoss","Aéromite","Taupiqueur",
+"Triopikeur","Miaouss","Persian","Psykokwak","Akwakwak","Férosinge",
+"Colossinge","Caninos","Arcanin","Ptitard","Têtarte","Tartard",
+"Abra","Kadabra","Alakazam","Machoc","Machopeur","Mackogneur",
+"Chétiflor","Boustiflor","Empiflor","Tentacool","Tentacruel",
+"Racaillou","Gravalanch","Grolem","Ponyta","Galopa","Ramoloss","Flagadoss",
+"Magnéti","Magnéton","Canarticho","Doduo","Dodrio","Otaria","Lamantine",
+"Tadmorv","Grotadmorv","Kokiyas","Crustabri","Fantominus","Spectrum",
+"Ectoplasma","Onix","Soporifik","Hypnomade","Krabby","Krabboss",
+"Voltorbe","Électrode","Noeunoeuf","Noadkoko","Osselait","Ossatueur",
+"Kicklee","Tygnon","Excelangue","Smogo","Smogogo","Rhinocorne",
+"Rhinoféros","Leveinard","Saquedeneu","Kangourex","Hypotrempe",
+"Hypocéan","Poissirène","Poissoroy","Stari","Staross","M. Mime",
+"Insecateur","Lippoutou","Élektek","Magmar","Scarabrute","Tauros",
+"Magicarpe","Léviator","Lokhlass","Métamorph","Évoli","Aquali","Voltali",
+"Pyroli","Porygon","Amonita","Amonistar","Kabuto","Kabutops",
+"Ptéra","Ronflex","Artikodin","Électhor","Sulfura","Minidraco",
+"Draco","Dracolosse","Mewtwo","Mew"
+];
+const pokedex = [];
+for(let i=1;i<=151;i++){
+  pokedex.push({
+    id:i,
+    name: POKEMON_NAMES[i-1],
+    unlocked:false,
+    img:`images/pokemon/${i}.png`
+  });
+}
+// ===== VARIABLES =====
+let currentPage = "accueil";
+let total=0,cpcBase=1,cpcMultiplier=1,diamonds=0;
+let level=1,xp=0;
+let eggs = {
+  common: 0,
+  rare: 0,
+  epic: 0,
+  legendary: 0
+};
+let totalEggsOpened = 0;
+let clicksThisLevel = 0;
+const maxLevel=10000;
+const colors=["#ff0000","#ff7b00","#ffd000","#2ecc71","#00c3ff","#0066ff","#8e44ad","#ff2da0","#ff1493","#7fff00","#00ff7f"];
+
+// Fonction XP pour palier (exponentielle pour ralentir montÎ˜e en lvl)
+function xpForLevel(lv){
+  return Math.floor(50 * Math.pow(1.05, lv-1)); // ajustable pour temps long
+}
+
+// ===== BOUTIQUE SYSTEM =====
+
+// upgrade clic
+let clickUpgrade={
+  level:0,
+  base:1,
+  cost:20
+};
+
+// autoclick avec perles
+let autoClick={
+  level:0,
+  cps:0,
+  cost:10
+};
+
+// boutique pokÎ˜mon
+const pokemonShop=[
+{id:25,name:"Pikachu",cost:50},
+{id:39,name:"Rondoudou",cost:40},
+{id:52,name:"Miaouss",cost:45},
+{id:133,name:"Évoli",cost:70},
+{id:143,name:"Ronflex",cost:120}
+];
+
+// ===== SUCCES =====
+const achievements = [
+
+{
+  id:"click_1",
+  type:"total_clicks",
+  name:"Premier clic",
+  desc:"Faire 1 clic",
+  goal:1,
+  icon:"succes_clic.png",
+  unlocked:false,
+  reward:{ pearls:5 }
+},
+
+{
+  id:"click_1000",
+  type:"total_clicks",
+  name:"Spam débutant",
+  desc:"Faire 1000 clics",
+  goal:1000,
+  icon:"succes_clic.png",
+  unlocked:false,
+  reward:{ cpc:2 }
+},
+
+{
+  id:"cpc_10",
+  type:"click",
+  name:"Doigt puissant",
+  desc:"Atteindre 10 clics par clic",
+  goal:10,
+  icon:"succes_clic.png",
+  unlocked:false,
+  reward:{ pearls:20 }
+},
+
+{
+  id:"level_10",
+  type:"level",
+  name:"Niveau 10",
+  desc:"Atteindre le niveau 10",
+  goal:10,
+  icon:"succes_niv.png",
+  unlocked:false,
+  reward:{ cps:5 }
+},
+
+{
+  id:"click_lvl",
+  type:"click_in_level",
+  name:"Spam niveau",
+  desc:"Faire 200 clics en un niveau",
+  goal:200,
+  icon:"succes_clicniv.png",
+  unlocked:false,
+  reward:{ cpc:5 }
+},
+
+{
+  id:"pearls_10",
+  type:"pearls",
+  name:"Collection de perles",
+  desc:"Obtenir 10 perles",
+  goal:10,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+
+{
+  id:"eggs_10",
+  type:"eggs",
+  name:"Collectionneur d'œufs",
+  desc:"Ouvrir 10 œufs",
+  goal:10,
+  icon:"succes_oeuf.png",
+  unlocked:false,
+  reward:{ eggs:{rare:1} }
+},
+
+{
+  id:"family_pika",
+  type:"pokemon_family",
+  name:"Famille Pikachu",
+  desc:"Obtenir Pikachu + Raichu",
+  goal:2,
+  family:"pikachu",
+  icon:"succes_pokf.png",
+  unlocked:false,
+  reward:{ pearls:50 }
+},
+
+{
+  id:"success_5",
+  type:"success_count",
+  name:"Collectionneur",
+  desc:"Débloquer 5 succès",
+  goal:5,
+  icon:"succes_succes.png",
+  unlocked:false,
+  reward:{ cps:10 }
+}
+
+];
+
+
+function oeufsPage(){
+
+  const totalEggs = eggs.common + eggs.rare + eggs.epic + eggs.legendary;
+
+  if(totalEggs === 0){
+    return `<div style="margin-top:40px;font-size:1.4em;color:#888;">
+      Aucun œuf disponible dans la réserve.
+    </div>`;
+  }
+
+  function renderEgg(type, label, img){
+    if(eggs[type] <= 0) return "";
+
+    return `
+    <div style="margin-bottom:30px;">
+      <h2>${label}</h2>
+      <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+        ${Array.from({length: eggs[type]}).map(()=>`
+          <div class="egg" onclick="clickEgg(this,'${type}')">
+            <img src="images/oeufs/${img}">
+          </div>
+        `).join("")}
+      </div>
+    </div>`;
+  }
+
+  return `
+    ${renderEgg("common","Oeufs Communs","commun.png")}
+    ${renderEgg("rare","Oeufs Rares","rare.png")}
+    ${renderEgg("epic","Oeufs Épique","epique.png")}
+    ${renderEgg("legendary","Oeufs Légendaires","legendaire.png")}
+  `;
+}
+
+const POKEMON_RARITY = {
+  common: [
+    1,4,7,10,13,16,19,21,23,25,27,29,32,35,37,39,41,43,46,48,
+    50,52,54,56,58,60,63,66,69,72,74,77,79,81,84,86,88,90,92,
+    96,98,100,102,104,108,109,111,114,116,118,120,129,133
+  ],
+  rare: [
+    2,5,8,11,14,17,20,22,24,26,28,30,33,36,38,40,42,44,47,49,
+    51,53,55,57,59,61,64,67,70,73,75,78,80,82,85,87,89,91,93,
+    97,99,101,103,105,110,112,115,117,119,121,130,134,135,136
+  ],
+  epic: [
+    3,6,9,12,15,18,31,34,45,62,65,68,71,76,83,94,95,106,107,
+    113,122,123,124,125,126,127,128,131,132,137,138,139,140,
+    141,142,143,147,148,149
+  ],
+  legendary: [144,145,150,151]
+};
+const pokemonFamilies = {
+  pikachu:[25,26],
+  starter:[1,2,3,4,5,6,7,8,9]
+};
+function weightedRandom(list, weights){
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+
+  for(let i=0;i<list.length;i++){
+    if(r < weights[i]) return list[i];
+    r -= weights[i];
+  }
+  return list[0];
+}
+
+function clickEgg(element, type){
+
+  let clicks = parseInt(element.dataset.clicks || "0");
+  clicks++;
+
+  element.dataset.clicks = clicks;
+
+  element.classList.add("wiggle");
+  setTimeout(()=>element.classList.remove("wiggle"), 300);
+
+  element.style.transform = `scale(${1 + clicks * 0.08})`;
+
+  if(clicks >= 3){
+    element.style.opacity = "0";
+
+    setTimeout(()=>{
+      openEgg(type);
+    },200);
+  }
+}
+
+function openEgg(type){
+
+  if(eggs[type] <= 0) return;
+
+  eggs[type]--;
+  totalEggsOpened++;
+  let pool = [];
+  let weights = [];
+
+  if(type === "common"){
+    pool = POKEMON_RARITY.common;
+    weights = pool.map(()=>1);
+  }
+
+  if(type === "rare"){
+    pool = [...POKEMON_RARITY.common, ...POKEMON_RARITY.rare];
+    weights = pool.map(id =>
+      POKEMON_RARITY.common.includes(id) ? 70 : 30
+    );
+  }
+
+  if(type === "epic"){
+    pool = [...POKEMON_RARITY.rare, ...POKEMON_RARITY.epic];
+    weights = pool.map(id =>
+      POKEMON_RARITY.rare.includes(id) ? 60 : 25
+    );
+  }
+
+  if(type === "legendary"){
+    pool = POKEMON_RARITY.legendary;
+    weights = pool.map(id =>
+      (id === 150 || id === 151) ? 1 : 10
+    );
+  }
+
+  const id = weightedRandom(pool, weights);
+
+  // ✅ IMPORTANT : on définit AVANT
+  const pokemon = pokedex[id-1];
+
+  if(!pokemon.unlocked){
+    pokemon.unlocked = true;
+    showNotification("Pokemon obtenu : " + pokemon.name);
+  } else {
+    diamonds += 50;
+    showNotification("Doublon +50 perles");
+  }
+
+  updateStats();
+  save();
+  render();
+}
+// ===== SAUVEGARDE =====
+function save(){
+localStorage.setItem("clickerSave",JSON.stringify({
+total,
+cpcBase,
+cpcMultiplier,
+diamonds,
+achievements,
+pokedex,
+level,
+xp,
+eggs,
+clickUpgrade,
+autoClick
+}));
+}
+function load(){
+
+  const d = JSON.parse(localStorage.getItem("clickerSave"));
+  if(!d) return;
+
+  total = d.total ?? 0;
+  cpcBase = d.cpcBase ?? 1;
+  cpcMultiplier = d.cpcMultiplier ?? 1;
+  diamonds = d.diamonds ?? 0;
+  level = d.level ?? 1;
+  xp = d.xp ?? 0;
+  eggs = d.eggs ?? eggs;
+
+  // 🔥 REBUILD SAFE
+  clickUpgrade = {
+    level: d.clickUpgrade?.level ?? 0,
+    base: 1,
+    cost: Math.floor(20 * Math.pow(1.12, d.clickUpgrade?.level ?? 0))
+  };
+
+  autoClick = {
+    level: d.autoClick?.level ?? 0,
+    cps: d.autoClick?.cps ?? 0,
+    cost: Math.floor(15 * Math.pow(1.15, d.autoClick?.level ?? 0))
+  };
+
+  if(d.achievements){
+    achievements.forEach((a,i)=>{
+      a.unlocked = d.achievements[i]?.unlocked || false;
+    });
+  }
+
+  if(d.pokedex){
+    pokedex.forEach((p,i)=>{
+      p.unlocked = d.pokedex[i]?.unlocked || false;
+    });
+  }
+}
+
+// UN SEUL interval global
+setInterval(()=>{
+
+  const ball = document.getElementById("pokeball"); // ✅ FIX
+
+  // 💰 autoclick
+  if(autoClick.level > 0 && autoClick.cps > 0){
+    total += autoClick.cps;
+  }
+
+  // 🔥 animation
+  if(ball){
+    if(autoClick.cps >= 50){
+      ball.classList.add("spin");
+    }else{
+      ball.classList.remove("spin");
+    }
+  }
+
+  updateStats();
+  save();
+
+},1000);
+// ===== FONCTIONS =====
+function formatNumber(n){
+  return Math.floor(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+function getCPC(){return cpcBase*cpcMultiplier;}
+function spawnEffect(btn,amount){const rect=btn.getBoundingClientRect();const span=document.createElement("span");span.className="click-effect";span.style.color=colors[Math.floor(Math.random()*colors.length)];span.textContent="+"+amount;const offsetX=Math.random()*200-100;const offsetY=Math.random()*100-50;span.style.left=(rect.width/2 + offsetX)+"px";span.style.top=(rect.height/2 + offsetY)+"px";btn.appendChild(span);setTimeout(()=>span.remove(),1200);}
+function updateStats(){
+
+  const totalEl = document.getElementById("total-clics");
+  const cpcEl = document.getElementById("cpc");
+  const diamondsEl = document.getElementById("diamonds");
+
+if(totalEl) totalEl.innerHTML = `<img src="images/logo.png" class="icon1"> ${formatNumber(total)} <img src="images/pokedollar.png" class="icon green">`;
+
+if(cpcEl) cpcEl.innerHTML = `<img src="images/curseur.png" class="icon2"> ${formatNumber(getCPC())}`;
+
+if(diamondsEl) diamondsEl.innerHTML = `<img src="images/perle.png" class="icon3"> ${formatNumber(diamonds)}`;
+  updateXPBar();
+  checkAchievements();
+}
+
+function checkPokemonFamily(family){
+  const list = pokemonFamilies[family];
+  if(!list) return 0;
+
+  let count = 0;
+  list.forEach(id=>{
+    if(pokedex[id-1].unlocked) count++;
+  });
+
+  return count;
+}
+
+// ===== XP & LEVEL =====
+function addXP(amount){
+  xp+=amount;
+
+  while(level<maxLevel && xp>=xpForLevel(level)){
+    xp-=xpForLevel(level);
+    level++;
+    clicksThisLevel = 0; // reset
+    showNotification(`Niveau ${level} atteint !`);
+  }
+}
+function updateXPBar(){document.getElementById("level-text").textContent=`Niveau : ${level}`;const nextXP=xpForLevel(level);document.getElementById("xp-fill").style.width=`${Math.min(100,(xp/nextXP)*100)}%`;document.getElementById("xp-text").textContent=`${xp} / ${nextXP} XP`;}
+
+function unlockAchievement(a){
+
+  a.unlocked = true;
+
+  showNotification("Succès : " + a.name);
+
+  if(a.reward.pearls) diamonds += a.reward.pearls;
+  if(a.reward.cpc) cpcBase += a.reward.cpc;
+  if(a.reward.cps) autoClick.cps += a.reward.cps;
+
+  if(a.reward.eggs){
+    Object.keys(a.reward.eggs).forEach(type=>{
+      eggs[type] += a.reward.eggs[type];
+    });
+  }
+
+  save();
+}
+
+// ===== CHECK SUCCÎ±ÃªS =====
+function checkAchievements(){
+
+  achievements.forEach(a=>{
+
+    if(a.unlocked) return;
+
+    let value = 0;
+
+    switch(a.type){
+
+      case "pearls": value = diamonds; break;
+      case "click": value = getCPC(); break;
+      case "total_clicks": value = total; break;
+      case "click_in_level": value = clicksThisLevel; break;
+      case "level": value = level; break;
+      case "eggs": value = totalEggsOpened; break;
+      case "success_count": value = achievements.filter(x=>x.unlocked).length; break;
+      case "pokemon_family": value = checkPokemonFamily(a.family); break;
+
+    }
+
+    if(value >= a.goal){
+      unlockAchievement(a);
+    }
+
+  });
+
+}
+
+// ===== PAGES SPA =====
+function accueilPage(){return `<button id="click-button">
+  <img src="images/pokeball.jpeg" id="pokeball">
+</button><div class="stats" id="total-clics">Pokécoins : ${total}</div><div class="stats" id="cpc">Clic par clic : ${getCPC()}</div><div class="stats" id="diamonds">Perles : ${diamonds}</div>`;}
+function boutiquePage(){
+  return `
+  
+  <div class="stats" id="total-clics"></div>
+  <div class="stats" id="cpc"></div>
+  <div class="stats" id="diamonds"></div>
+
+  <div class="shop-layout">
+
+    <!-- TOP (jaune) -->
+    <div class="shop-top">
+      <div id="click-shop"></div>
+      <div id="auto-shop"></div>
+    </div>
+
+    <!-- BAS -->
+    <div class="shop-bottom">
+
+      <!-- VIDE (gauche) -->
+      <div class="shop-left"></div>
+
+      <!-- POKEMON (droite) -->
+      <div class="shop-right" id="pokemon-shop"></div>
+
+    </div>
+
+  </div>
+  `;
+}
+function SuccèsPage(){
+
+  let html = '<div class="success-container">';
+
+  achievements.forEach(a=>{
+
+    html += `
+    <div class="success-card ${a.unlocked ? "unlocked":"locked"}">
+
+      <img src="images/${a.icon}" class="success-icon">
+
+      <div class="success-text">
+        <div class="success-title">${a.name}</div>
+        <div class="success-desc">${a.desc}</div>
+      </div>
+
+    </div>`;
+  });
+
+  html += '</div>';
+
+  return html;
+}
+function pokedexPage(){
+  let html = '<div class="pokedex-container">';
+
+  pokedex.forEach(p=>{
+    if(!p.unlocked) return; // â‰¡Æ’Ã‹Â¸ cache les non obtenus
+
+    html += `
+    <div class="pokemon unlocked">
+      <div class="pokemon-number">#${p.id}</div>
+      <img src="${p.img}">
+      <div class="pokemon-name">${p.name}</div>
+    </div>`;
+  });
+
+  html += '</div>';
+  return html;
+}
+function spawnFallingBalls(){
+
+  const mainBall = document.getElementById("pokeball");
+  const rect = mainBall.getBoundingClientRect();
+
+  const ball = document.createElement("img");
+  ball.src = "images/pokeball.jpeg";
+  ball.className = "falling-ball";
+
+  // centre de la pokÎ˜ball
+  const centerX = rect.left + rect.width/2;
+  const centerY = rect.top + rect.height/2;
+
+  // angle alÎ˜atoire autour de la pokÎ˜ball
+  const angle = Math.random() * Math.PI * 2;
+
+  // rayon (distance depuis le centre Î“Â¶ÃŠ bord)
+  const radius = rect.width / 2;
+
+  // position de dÎ˜part (autour du cercle)
+  const startX = centerX + Math.cos(angle) * radius;
+  const startY = centerY + Math.sin(angle) * radius;
+
+  ball.style.left = startX + "px";
+  ball.style.top = startY + "px";
+
+  document.body.appendChild(ball);
+
+  // direction vers le bas avec un peu de dispersion
+  const randomX = (Math.random() - 0.5) * 100;
+  const randomY = 250 + Math.random()*150;
+
+  ball.animate([
+    {
+      transform: `translate(0,0) rotate(0deg)`,
+      opacity:1
+    },
+    {
+      transform: `translate(${randomX}px, ${randomY}px) rotate(360deg)`,
+      opacity:0
+    }
+  ],{
+    duration:900,
+    easing:"ease-out"
+  });
+
+  setTimeout(()=>ball.remove(),900);
+}
+
+// ===== BOUTIQUE RENDER =====
+function renderShop(){
+
+const clickShop = document.getElementById("click-shop");
+const autoShop = document.getElementById("auto-shop");
+const pokemonShopDiv = document.getElementById("pokemon-shop");
+
+if(clickShop) clickShop.innerHTML="";
+if(autoShop) autoShop.innerHTML="";
+if(pokemonShopDiv) pokemonShopDiv.innerHTML="";
+
+// ===== UPGRADE CLIC =====
+
+const clickDiv=document.createElement("div");
+clickDiv.className="shop-item";
+
+clickDiv.innerHTML=`
+<div class="shop-info">
+<h4>+1 clic</h4>
+<p>+${Math.floor(1 + clickUpgrade.level * 0.3)} puissance</p>
+<p class="price">Prix : ${Math.floor(clickUpgrade.cost)} Pokécoins</p>
+</div>`;
+
+const clickBtn=document.createElement("button");
+clickBtn.className="buy-btn";
+clickBtn.textContent="Acheter";
+clickBtn.disabled=total<clickUpgrade.cost;
+
+clickBtn.onclick=()=>{
+
+  if(total>=clickUpgrade.cost){
+
+    total-=clickUpgrade.cost;
+
+    clickUpgrade.level = clickUpgrade.level || 0;
+    clickUpgrade.level++;
+
+    cpcBase += Math.floor(1 + clickUpgrade.level * 0.3);
+
+    // bonus tous les 10 niveaux
+    if(clickUpgrade.level % 10 === 0){
+      cpcMultiplier *= 1.2;
+    }
+
+    clickUpgrade.cost = Math.floor(20 * Math.pow(1.12, clickUpgrade.level));
+
+    updateStats();
+    renderShop();
+    save();
+  }
+};
+
+clickDiv.appendChild(clickBtn);
+clickShop.appendChild(clickDiv);
+
+
+// ===== AUTO CLICK CPS =====
+
+const autoDiv = document.createElement("div");
+autoDiv.className = "shop-item";
+
+autoDiv.innerHTML = `
+<div class="shop-info">
+  <h4>Auto clic</h4>
+  <p>+${Math.floor(1 + autoClick.level * 0.95)} CPS</p>
+  <p class="price">Prix : ${Math.floor(autoClick.cost)} perles</p>
+</div>`;
+
+// bouton
+const autoBtn = document.createElement("button");
+autoBtn.className = "buy-btn";
+autoBtn.textContent = "Acheter";
+
+// sécurité affichage
+autoBtn.disabled = diamonds < autoClick.cost;
+
+// click
+autoBtn.onclick = () => {
+
+  if (diamonds < autoClick.cost) return; // 🔒 sécurité
+
+  diamonds -= autoClick.cost;
+
+  autoClick.level ??= 0;
+  autoClick.cps ??= 0;
+
+  autoClick.level++;
+
+  // gain CPS
+  autoClick.cps += Math.floor(1 + autoClick.level * 0.5);
+
+  // bonus tous les 10 niveaux
+  if (autoClick.level % 10 === 0) {
+    autoClick.cps = Math.floor(autoClick.cps * 1.3);
+  }
+
+  // nouveau prix
+  autoClick.cost = Math.floor(15 * Math.pow(1.15, autoClick.level));
+
+  updateStats();
+  renderShop();
+  save();
+};
+
+// ajout bouton
+autoDiv.appendChild(autoBtn);
+
+// sécurité DOM
+if (autoShop) autoShop.appendChild(autoDiv);
+
+// ===== POKÎ±Ã«MON SHOP =====
+
+pokemonShop.forEach(p=>{
+
+  if(pokedex[p.id-1].unlocked) return;
+
+  const pokeDiv = document.createElement("div");
+  pokeDiv.className = "shop-item";
+
+  pokeDiv.innerHTML = `
+  <div class="shop-info">
+    <h4>${p.name}</h4>
+    <p class="price">${p.cost} perles</p>
+  </div>`;
+
+  const btn = document.createElement("button");
+  btn.className = "buy-btn";
+  btn.textContent = "Acheter";
+  btn.disabled = diamonds < p.cost;
+
+  btn.onclick = ()=>{
+    if(diamonds >= p.cost){
+      diamonds -= p.cost;
+      pokedex[p.id-1].unlocked = true;
+
+      showNotification("Pokémon obtenu : " + p.name);
+
+      updateStats();
+      renderShop();
+      save();
+    }
+  };
+
+  pokeDiv.appendChild(btn);
+  pokemonShopDiv.appendChild(pokeDiv); // ✅ IMPORTANT
+});
+}
+// ===== SPA RENDER =====
+function render(){
+
+  document.getElementById("content").innerHTML = 
+    currentPage==="accueil"?accueilPage():
+    currentPage==="boutique"?boutiquePage():
+    currentPage==="Succès"?SuccèsPage():
+    currentPage==="pokedex"?pokedexPage():
+    oeufsPage();
+
+  // ===== ACCUEIL =====
+  if(currentPage==="accueil"){
+    const btn=document.getElementById("click-button");
+
+    if(btn) btn.onclick=()=>{
+
+      const ball = document.getElementById("pokeball");
+
+      ball.classList.add("shake");
+      setTimeout(()=>ball.classList.remove("shake"),300);
+
+      spawnFallingBalls();
+
+      total += getCPC();
+	  clicksThisLevel++;
+      addXP(1);
+
+      if(Math.random()<0.95) diamonds++;
+
+const r = Math.random();
+
+if(r < 0.00002){ // 0.002%
+  eggs.legendary++;
+  showNotification("Oeuf Légendaire !");
+}
+else if(r < 0.0001){ // 0.01%
+  eggs.epic++;
+  showNotification("Oeuf Épique !");
+}
+else if(r < 0.0005){ // 0.05%
+  eggs.rare++;
+  showNotification("Oeuf Rare !");
+}
+else if(r < 0.002){ // 0.2%
+  eggs.common++;
+  showNotification("Oeuf Commun !");
+}
+      updateStats();
+      save();
+    };
+  }
+
+  // ===== BOUTIQUE =====
+  if(currentPage==="boutique"){
+    renderShop();
+  }
+
+  // ===== GLOBAL =====
+  updateStats();
+}
+
+// ===== NAVIGATION =====
+document.querySelectorAll("nav a").forEach(a=>{
+  a.onclick=e=>{
+    e.preventDefault();
+    currentPage=a.dataset.page;
+    render();
+  };
+});
+
+// ===== RESET =====
+document.getElementById("reset").onclick=()=>{
+  const confirmReset = confirm("Es-tu sûr de vouloir tout Réinitialiser ?");
+  if(!confirmReset) return;
+
+  // reset variables
+  total=0;
+  cpcBase=1;
+  cpcMultiplier=1;
+  diamonds=0;
+  level=1;
+  xp=0;
+
+  eggs = {
+    common: 0,
+    rare: 0,
+    epic: 0,
+    legendary: 0
+  };
+
+  // 🔥 RESET PROPRE DES UPGRADES
+  clickUpgrade = {
+    level:0,
+    base:1,
+    cost:20
+  };
+
+  autoClick = {
+    level:0,
+    cps:0,
+    cost:15
+  };
+
+  achievements.forEach(a=>a.unlocked=false);
+  pokedex.forEach(p=>p.unlocked=false);
+
+  // 🔥 SUPPRIME LA SAVE
+  localStorage.removeItem("clickerSave");
+
+  render(); // ❗ PAS DE SAVE ICI
+};
+
+// ===== NOTIFICATIONS =====
+function showNotification(text){
+  const container = document.getElementById("notif-container");
+  const notif = document.createElement("div");
+  notif.className = "notif";
+  notif.textContent = text;
+  container.appendChild(notif);
+  setTimeout(()=>notif.remove(),3000);
+}
+
+// ===== INITIAL RENDER =====
+load();   // 🔥 charge la sauvegarde
+render();
+
+function spawnFallingBalls(){
+
+  const ball = document.createElement("img");
+  ball.src = "images/pokeball.jpeg";
+  ball.className = "falling-ball";
+
+  // position aléatoire sur toute la largeur
+  ball.style.left = Math.random() * window.innerWidth + "px";
+
+  // durée aléatoire pour effet naturel
+  const duration = 1.5 + Math.random() * 2;
+  ball.style.animationDuration = duration + "s";
+
+  document.body.appendChild(ball);
+
+  setTimeout(()=>ball.remove(), duration * 1000);
+}
+document.getElementById("secret-heart").onclick = () => {
+
+  const sulfuraId = 146; // Sulfura
+
+  const pokemon = pokedex[sulfuraId - 1];
+
+  if(!pokemon.unlocked){
+    pokemon.unlocked = true;
+    showNotification("🔥 Pokémon Secret : " + pokemon.name);
+  } else {
+    showNotification("Déjà obtenu !");
+  }
+
+  save();
+  render();
+};
+
+</script>
+<div id="notif-container"></div>
+</body>
+</html>
