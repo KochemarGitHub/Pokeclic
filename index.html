@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Pokéclic</title>
 <style>
 /* ===== GLOBAL ===== */
@@ -16,6 +17,10 @@ nav a:hover{color:#b74747;}
 main{flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 button{border:none;border-radius:10px;padding:10px 18px;cursor:pointer;transition:0.15s;}
 #click-button{width:220px;height:90px;font-size:1.5em;background:#1e2128;color:#fff;border-radius:18px;margin:30px auto;display:block;position:relative;overflow:visible;box-shadow:0 0 25px rgba(0,0,0,0.8);}
+#click-button {
+  touch-action: manipulation;
+  user-select: none;
+}
 #click-button{
   width:auto;
   height:auto;
@@ -25,7 +30,9 @@ button{border:none;border-radius:10px;padding:10px 18px;cursor:pointer;transitio
 #pokeball{
   animation: floatBall 2s ease-in-out infinite;
 }
-
+img {
+  pointer-events: none;
+}
 #pokeball.shake{
   animation: shakeBall 0.3s;
 }
@@ -646,7 +653,12 @@ footer{background:#16181d;padding:40px 20px 20px;position:relative;margin-top:au
   background:#333;
   color:#777;
 }
-
+html, body {
+  touch-action: manipulation;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 </style>
 </head>
 <body>
@@ -736,7 +748,7 @@ const colors=["#ff0000","#ff7b00","#ffd000","#2ecc71","#00c3ff","#0066ff","#8e44
 
 // Fonction XP pour palier (exponentielle pour ralentir montÎ˜e en lvl)
 function xpForLevel(lv){
-  return Math.floor(50 * Math.pow(1.05, lv-1)); // ajustable pour temps long
+  return Math.floor(50 * Math.pow(1.03, lv-1)); // ajustable pour temps long
 }
 
 // ===== BOUTIQUE SYSTEM =====
@@ -768,103 +780,264 @@ const pokemonShop=[
 const achievements = [
 
 {
-  id:"click_1",
-  type:"total_clicks",
-  name:"Premier clic",
-  desc:"Faire 1 clic",
-  goal:1,
-  icon:"succes_clic.png",
-  unlocked:false,
-  reward:{ pearls:5 }
-},
-
-{
-  id:"click_1000",
-  type:"total_clicks",
-  name:"Spam débutant",
-  desc:"Faire 1000 clics",
-  goal:1000,
-  icon:"succes_clic.png",
-  unlocked:false,
-  reward:{ cpc:2 }
-},
-
-{
-  id:"cpc_10",
-  type:"click",
-  name:"Doigt puissant",
-  desc:"Atteindre 10 clics par clic",
-  goal:10,
-  icon:"succes_clic.png",
-  unlocked:false,
-  reward:{ pearls:20 }
-},
-
-{
-  id:"level_10",
-  type:"level",
-  name:"Niveau 10",
-  desc:"Atteindre le niveau 10",
-  goal:10,
-  icon:"succes_niv.png",
-  unlocked:false,
-  reward:{ cps:5 }
-},
-
-{
-  id:"click_lvl",
-  type:"click_in_level",
-  name:"Spam niveau",
-  desc:"Faire 200 clics en un niveau",
-  goal:200,
-  icon:"succes_clicniv.png",
-  unlocked:false,
-  reward:{ cpc:5 }
-},
-
-{
-  id:"pearls_10",
+  id:"pearls_100",
   type:"pearls",
-  name:"Collection de perles",
-  desc:"Obtenir 10 perles",
-  goal:10,
+  name:"Obtenir 100 perles",
+  desc:"Récompense : ",
+  goal:100,
   icon:"succes_perle.png",
   unlocked:false,
   reward:{ cpc:1 }
 },
-
 {
-  id:"eggs_10",
-  type:"eggs",
-  name:"Collectionneur d'œufs",
-  desc:"Ouvrir 10 œufs",
-  goal:10,
-  icon:"succes_oeuf.png",
+  id:"pearls_500",
+  type:"pearls",
+  name:"Obtenir 500 perles",
+  desc:"Récompense : ",
+  goal:500,
+  icon:"succes_perle.png",
   unlocked:false,
-  reward:{ eggs:{rare:1} }
+  reward:{ cpc:1 }
 },
-
 {
-  id:"family_pika",
-  type:"pokemon_family",
-  name:"Famille Pikachu",
-  desc:"Obtenir Pikachu + Raichu",
-  goal:2,
-  family:"pikachu",
-  icon:"succes_pokf.png",
+  id:"pearls_1000",
+  type:"pearls",
+  name:"Obtenir 1.000 perles",
+  desc:"Récompense : ",
+  goal:1000,
+  icon:"succes_perle.png",
   unlocked:false,
-  reward:{ pearls:50 }
+  reward:{ cpc:1 }
 },
-
 {
-  id:"success_5",
-  type:"success_count",
-  name:"Collectionneur",
-  desc:"Débloquer 5 succès",
-  goal:5,
-  icon:"succes_succes.png",
+  id:"pearls_2500",
+  type:"pearls",
+  name:"Obtenir 2.500 perles",
+  desc:"Récompense : ",
+  goal:2500,
+  icon:"succes_perle.png",
   unlocked:false,
-  reward:{ cps:10 }
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_5000",
+  type:"pearls",
+  name:"Obtenir 5.000 perles",
+  desc:"Récompense : ",
+  goal:5000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_10000",
+  type:"pearls",
+  name:"Obtenir 10.000 perles",
+  desc:"Récompense : ",
+  goal:10000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_15000",
+  type:"pearls",
+  name:"Obtenir 15.000 perles",
+  desc:"Récompense : ",
+  goal:15000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_25000",
+  type:"pearls",
+  name:"Obtenir 25.000 perles",
+  desc:"Récompense : ",
+  goal:25000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_50000",
+  type:"pearls",
+  name:"Obtenir 50.000 perles",
+  desc:"Récompense : ",
+  goal:50000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_75000",
+  type:"pearls",
+  name:"Obtenir 75.000 perles",
+  desc:"Récompense : ",
+  goal:75000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_100000",
+  type:"pearls",
+  name:"Obtenir 100.000 perles",
+  desc:"Récompense : ",
+  goal:100000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_250000",
+  type:"pearls",
+  name:"Obtenir 250.000 perles",
+  desc:"Récompense : ",
+  goal:250000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_500000",
+  type:"pearls",
+  name:"Obtenir 500.000 perles",
+  desc:"Récompense : ",
+  goal:500000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_750000",
+  type:"pearls",
+  name:"Obtenir 750.000 perles",
+  desc:"Récompense : ",
+  goal:750000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_1000000",
+  type:"pearls",
+  name:"Obtenir 1.000.000 perles",
+  desc:"Récompense : ",
+  goal:1000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_2500000",
+  type:"pearls",
+  name:"Obtenir 2.500.000 perles",
+  desc:"Récompense : ",
+  goal:2500000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_5000000",
+  type:"pearls",
+  name:"Obtenir 5.000.000 perles",
+  desc:"Récompense : ",
+  goal:5000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_10000000",
+  type:"pearls",
+  name:"Obtenir 10.000.000 perles",
+  desc:"Récompense : ",
+  goal:10000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_25000000",
+  type:"pearls",
+  name:"Obtenir 25.000.000 perles",
+  desc:"Récompense : ",
+  goal:25000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_50000000",
+  type:"pearls",
+  name:"Obtenir 50.000.000 perles",
+  desc:"Récompense : ",
+  goal:50000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_75000000",
+  type:"pearls",
+  name:"Obtenir 75.000.000 perles",
+  desc:"Récompense : ",
+  goal:75000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_100000000",
+  type:"pearls",
+  name:"Obtenir 100.000.000 perles",
+  desc:"Récompense : ",
+  goal:100000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_250000000",
+  type:"pearls",
+  name:"Obtenir 250.000.000 perles",
+  desc:"Récompense : ",
+  goal:250000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_500000000",
+  type:"pearls",
+  name:"Obtenir 500.000.000 perles",
+  desc:"Récompense : ",
+  goal:500000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_750000000",
+  type:"pearls",
+  name:"Obtenir 750.000.000 perles",
+  desc:"Récompense : ",
+  goal:750000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
+},
+{
+  id:"pearls_1000000000",
+  type:"pearls",
+  name:"Obtenir 1.000.000.000 perles",
+  desc:"Récompense : ",
+  goal:1000000000,
+  icon:"succes_perle.png",
+  unlocked:false,
+  reward:{ cpc:1 }
 }
 
 ];
@@ -923,8 +1096,88 @@ const POKEMON_RARITY = {
   legendary: [144,145,150,151]
 };
 const pokemonFamilies = {
-  pikachu:[25,26],
-  starter:[1,2,3,4,5,6,7,8,9]
+  bulbizarre:[1,2,3],
+  salameche: [4,5,6],
+  carapuce: [7,8,9],
+  chenipan: [10,11,12],
+  aspicot: [13,14,15],
+  roucool: [16,17,18],
+  rattata: [19,20],
+  piafabec: [21,22],
+  abo: [23,24],
+  pikachu: [25,26],
+  sabelette: [27,28],
+  nidoranF: [29,30,31],
+  nidoranM: [32,33,34],
+  melofee: [35,36],
+  goupix: [37,38],
+  rondoudou: [39,40],
+  nosferapti: [41,42],
+  mystherbe: [43,44,45],
+  paras: [46,47],
+  mimitoss: [48,49],
+  taupiqueur: [50,51],
+  miaouss: [52,53],
+  psykokwak: [54,55],
+  ferosinge: [56,57],
+  caninos: [58,59],
+  ptitard: [60,61,62],
+  abra: [63,64,65],
+  machoc: [66,67,68],
+  chetiflor: [69,70,71],
+  tentacool: [72,73],
+  racaillou: [74,75,76],
+  ponyta: [77,78],
+  ramoloss: [79,80],
+  magneti: [81,82],
+  canarticho: [83],
+  doduo: [84,85],
+  otaria: [86,87],
+  tadmorv: [88,89],
+  kokiyas: [90,91],
+  fantominus: [92,93,94],
+  onix: [95],
+  soporifik: [96,97],
+  krabby: [98,99],
+  voltorbe: [100,101],
+  noeunoeuf: [102,103],
+  osselait: [104,105],
+  kicklee: [106,107],
+  excelangue: [108],
+  smogo: [109,110],
+  rhinocorne: [111,112],
+  leveinard: [113],
+  saquedeneu: [114],
+  kangourex: [115],
+  hypotrempe: [116,117],
+  poissirene: [118,119],
+  stari: [120,121],
+  mmime: [122],
+  insecateur: [123],
+  lippoutou: [124],
+  elektek: [125],
+  magmar: [126],
+  scarabrute: [127],
+  tauros: [128],
+  magicarpe: [129,130],
+  lokhlass: [131],
+  metamorph: [132],
+  evoli: [133,134,135,136],
+  porygon: [137],
+  amonita: [138,139],
+  kabuto: [140,141],
+  ptera: [142],
+  ronflex: [143],
+  artikodin: [144,145,146],
+  minidraco: [147,148,149],
+  mewtwo: [150],
+  mew: [151],
+  starter: [1,2,3,4,5,6,7,8,9],
+  insecte: [10,11,12,13,14,15,46,47,48,49,123],
+  oiseau: [16,17,18,21,22,41,42,84,85],
+  aquatique: [54,55,60,61,62,72,73,86,87,90,91,116,117,118,119,120,121,129,130,131],
+  combattant: [57,62,66,67,68,106,107],
+  phossile: [138,139,140,141,142]
 };
 function weightedRandom(list, weights){
   const total = weights.reduce((a,b)=>a+b,0);
@@ -1485,19 +1738,19 @@ function render(){
 
 const r = Math.random();
 
-if(r < 0.00002){ // 0.002%
+if(r < 0.00005){ // 0.05%
   eggs.legendary++;
   showNotification("Oeuf Légendaire !");
 }
-else if(r < 0.0001){ // 0.01%
+else if(r < 0.0002){ // 0.2%
   eggs.epic++;
   showNotification("Oeuf Épique !");
 }
-else if(r < 0.0005){ // 0.05%
+else if(r < 0.001){ // 1%
   eggs.rare++;
   showNotification("Oeuf Rare !");
 }
-else if(r < 0.002){ // 0.2%
+else if(r < 0.005){ // 5%
   eggs.common++;
   showNotification("Oeuf Commun !");
 }
@@ -1613,7 +1866,15 @@ document.getElementById("secret-heart").onclick = () => {
   save();
   render();
 };
+let lastTouchEnd = 0;
 
+document.addEventListener('touchend', function (event) {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
 </script>
 <div id="notif-container"></div>
 </body>
